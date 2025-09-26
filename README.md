@@ -182,6 +182,107 @@ This is a fully self-contained React application with no external dependencies b
 - Modify the data schema
 - Add new features
 
+## Deployment
+
+### Option 1: Netlify (Recommended)
+
+1. **Connect to GitHub**: 
+   - Go to [Netlify](https://netlify.com) and sign up/login
+   - Click "New site from Git" → "GitHub"
+   - Select this repository
+
+2. **Configure Build Settings**:
+   - Build command: `npm run build`
+   - Publish directory: `dist`
+   - Node version: `18` (set in Environment variables)
+
+3. **Deploy**: Netlify will automatically deploy from `netlify.toml` configuration
+
+### Option 2: Vercel
+
+1. **Connect to GitHub**:
+   - Go to [Vercel](https://vercel.com) and sign up/login
+   - Click "New Project" → Import from GitHub
+   - Select this repository
+
+2. **Configure Settings**:
+   - Framework Preset: Vite
+   - Build command: `npm run build`
+   - Output directory: `dist`
+
+3. **Deploy**: Vercel will use the `vercel.json` configuration
+
+### Option 3: GitHub Pages
+
+1. **Enable GitHub Pages**:
+   - Go to repository Settings → Pages
+   - Source: "GitHub Actions"
+
+2. **Create Workflow**: Add `.github/workflows/deploy.yml`:
+   ```yaml
+   name: Deploy to GitHub Pages
+   on:
+     push:
+       branches: [ main ]
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
+       steps:
+         - uses: actions/checkout@v3
+         - uses: actions/setup-node@v3
+           with:
+             node-version: 18
+             cache: 'npm'
+         - run: npm ci
+         - run: npm run build
+         - uses: actions/deploy-pages@v2
+           with:
+             artifact_name: dist
+   ```
+
+## Development Guide
+
+### Getting Started
+```bash
+# Clone the repository
+git clone https://github.com/yourusername/leadmarket-directory.git
+cd leadmarket-directory
+
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+```
+
+### Testing Data Import
+Use the included `sample-leads.json` file to test the import functionality:
+1. Click "Import JSON" in the app header
+2. Select the `sample-leads.json` file
+3. The app will load 6 sample leads with various industries and scores
+
+### Environment Variables
+For production deployment, you can set:
+- `NODE_VERSION=18` (for build environments)
+- Custom environment variables as needed
+
+## Architecture Notes
+
+This application uses a **monolithic single-component architecture** intentionally:
+- All functionality is in `src/DirectorySite.jsx` (514 lines)
+- No external state management (uses React hooks)
+- No routing (single page application)
+- Self-contained styling (no external CSS frameworks)
+- Easy to understand, modify, and deploy
+
+## Performance Features
+
+- **Optimized Build**: Vite provides fast builds with tree shaking
+- **Lazy Loading**: React components render efficiently
+- **Caching**: Static assets are cached with long expiry headers
+- **Compression**: Gzip compression enabled for all deployments
+- **Source Maps**: Available in development for debugging
+
 ## License
 
 MIT License - feel free to use this in your own projects.
