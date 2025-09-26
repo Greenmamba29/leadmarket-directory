@@ -286,6 +286,8 @@ export default function DirectorySite() {
   const [excl, setExcl] = useState("All");
   const [sort, setSort] = useState("score-desc");
   const [modalLead, setModalLead] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
   const fileRef = useRef(null);
 
   const industries = useMemo(() => ["All", ...Array.from(new Set(leads.map(l => (l.Industry || "").trim()).filter(Boolean)))], [leads]);
@@ -323,25 +325,58 @@ export default function DirectorySite() {
     return rows;
   }, [leads, q, industry, geo, excl, sort]);
 
-  // Simple JSON import (expects array of lead objects with same keys)
+  // Enhanced JSON import with validation and error handling
   function onImportJSON(e) {
     const file = e.target.files?.[0];
     if (!file) return;
+    
+    setIsLoading(true);
+    setError(null);
+    
     const reader = new FileReader();
     reader.onload = () => {
       try {
         const data = JSON.parse(String(reader.result));
+        let leadsArray = [];
+        
         if (Array.isArray(data)) {
-          setLeads(data);
+          leadsArray = data;
         } else if (Array.isArray(data?.records)) {
-          setLeads(data.records);
+          leadsArray = data.records;
         } else {
-          alert("JSON must be an array of lead objects or {records: [...]}.");
+          throw new Error("JSON must be an array of lead objects or {records: [...]}.");
         }
+        
+        // Validate lead structure
+        const requiredFields = ['Name', 'Company', 'Role'];
+        const invalidLeads = leadsArray.filter(lead => 
+          !requiredFields.every(field => lead[field])
+        );
+        
+        if (invalidLeads.length > 0) {
+          throw new Error(`Found ${invalidLeads.length} leads missing required fields (Name, Company, Role).`);
+        }
+        
+        setLeads(leadsArray);
+        setError(null);
+        
+        // Reset file input
+        if (fileRef.current) {
+          fileRef.current.value = '';
+        }
+        
       } catch (err) {
-        alert("Invalid JSON file.");
+        setError(err.message || "Invalid JSON file format.");
+      } finally {
+        setIsLoading(false);
       }
     };
+    
+    reader.onerror = () => {
+      setError("Failed to read file.");
+      setIsLoading(false);
+    };
+    
     reader.readAsText(file);
   }
 
@@ -367,9 +402,18 @@ export default function DirectorySite() {
           <div style={{ display: "flex", gap: 8 }}>
             <button
               onClick={() => fileRef.current?.click()}
-              style={{ background: "#111827", color: "white", padding: "10px 14px", borderRadius: 10, border: "1px solid #1f2937" }}
+              disabled={isLoading}
+              style={{ 
+                background: isLoading ? "#374151" : "#111827", 
+                color: "white", 
+                padding: "10px 14px", 
+                borderRadius: 10, 
+                border: "1px solid #1f2937",
+                cursor: isLoading ? "not-allowed" : "pointer",
+                opacity: isLoading ? 0.7 : 1
+              }}
             >
-              Import JSON
+              {isLoading ? "Importing..." : "Import JSON"}
             </button>
             <input ref={fileRef} type="file" accept="application/json" onChange={onImportJSON} hidden />
             <a href="#credits" style={{ background: "#22c55e", color: "#052e16", padding: "10px 14px", borderRadius: 10, textDecoration: "none", fontWeight: 700 }}>
@@ -378,6 +422,42 @@ export default function DirectorySite() {
           </div>
         </div>
       </header>
+
+      {/* Error Message */}
+      {error && (
+        <section style={{ padding: "12px 16px 0" }}>
+          <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+            <div style={{
+              background: "#fef2f2",
+              border: "1px solid #fecaca",
+              borderRadius: 12,
+              padding: 16,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              color: "#dc2626"
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <span style={{ fontSize: 20 }}>⚠️</span>
+                <span>{error}</span>
+              </div>
+              <button
+                onClick={() => setError(null)}
+                style={{
+                  background: "transparent",
+                  border: "none",
+                  color: "#dc2626",
+                  cursor: "pointer",
+                  fontSize: 18,
+                  padding: 4
+                }}
+              >
+                ✕
+              </button>
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Filters */}
       <section style={{ padding: "12px 16px 0" }}>
