@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useEffect, useRef } from "react";
+import React, { useMemo, useState, useRef } from "react";
 
 /**
  * Pay‑Per‑Lead Directory — One‑Page React Site
@@ -175,7 +175,8 @@ function Modal({ open, onClose, children }) {
   return (
     <div
       role="dialog"
-      aria-modal
+      aria-modal="true"
+      aria-labelledby="modal-title"
       onClick={onClose}
       style={{
         position: "fixed",
@@ -224,13 +225,13 @@ function LeadCard({ lead, onPreview }) {
         <div style={{ fontWeight: 700, fontSize: 16 }}>{lead.Name} · <span style={{ color: "#6b7280" }}>{lead.Role}</span></div>
         <Badge color={scoreColor(Number(lead.Score))}>Score {lead.Score}</Badge>
       </div>
-      <a href={lead.Website} target="_blank" rel="noreferrer" style={{ color: "#2563eb", textDecoration: "none"}}>
+      <a href={lead.Website} target="_blank" rel="noopener noreferrer" style={{ color: "#2563eb", textDecoration: "none"}}>
         {lead.Company}
       </a>
       <div style={{ color: "#374151", fontSize: 14 }}>{lead.Brief || "High‑intent signals detected."}</div>
       <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
-        {(lead["Tech Signals"] || "").split(";").map((t) => (
-          <Badge key={t.trim()} color="#334155">{t.trim()}</Badge>
+        {(lead["Tech Signals"] || "").split(";").filter(t => t.trim()).map((t, idx) => (
+          <Badge key={`${t.trim()}-${idx}`} color="#334155">{t.trim()}</Badge>
         ))}
       </div>
       <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
@@ -501,7 +502,7 @@ export default function DirectorySite() {
             gap: 16,
           }}>
             {filtered.map((lead, idx) => (
-              <LeadCard key={idx} lead={lead} onPreview={setModalLead} />
+              <LeadCard key={`${lead.Company}-${lead.Name}-${idx}`} lead={lead} onPreview={setModalLead} />
             ))}
           </div>
         </div>
@@ -526,7 +527,7 @@ export default function DirectorySite() {
           <div style={{ display: "grid", gap: 16 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <div>
-                <div style={{ fontWeight: 800, fontSize: 20 }}>{modalLead.Company}</div>
+                <div id="modal-title" style={{ fontWeight: 800, fontSize: 20 }}>{modalLead.Company}</div>
                 <div style={{ color: "#374151" }}>{modalLead.Name} — {modalLead.Role}</div>
               </div>
               <Badge color={scoreColor(Number(modalLead.Score))}>Score {modalLead.Score}</Badge>
@@ -535,8 +536,8 @@ export default function DirectorySite() {
               <div>
                 <div style={{ fontSize: 14, color: "#111827" }}>{modalLead.Brief || "High‑intent signals detected."}</div>
                 <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                  {(modalLead["Tech Signals"] || "").split(";").map((t) => (
-                    <Badge key={t.trim()} color="#334155">{t.trim()}</Badge>
+                  {(modalLead["Tech Signals"] || "").split(";").filter(t => t.trim()).map((t, idx) => (
+                    <Badge key={`modal-${t.trim()}-${idx}`} color="#334155">{t.trim()}</Badge>
                   ))}
                 </div>
                 <div style={{ marginTop: 12, fontSize: 14 }}>
@@ -554,7 +555,7 @@ export default function DirectorySite() {
                 <ul style={{ listStyle: "disc", paddingLeft: 18, display: "grid", gap: 6 }}>
                   {(modalLead["Source URLs"]||"").split(";").map((u, i) => (
                     <li key={i}>
-                      <a href={u.trim()} target="_blank" rel="noreferrer" style={{ color: "#2563eb" }}>
+                      <a href={u.trim()} target="_blank" rel="noopener noreferrer" style={{ color: "#2563eb" }}>
                         {u.trim()}
                       </a>
                     </li>
@@ -585,7 +586,7 @@ export default function DirectorySite() {
               >
                 Buy lead
               </a>
-              <a href={modalLead.Website} target="_blank" rel="noreferrer" style={{ color: "#2563eb" }}>Visit site</a>
+              <a href={modalLead.Website} target="_blank" rel="noopener noreferrer" style={{ color: "#2563eb" }}>Visit site</a>
             </div>
           </div>
         )}
