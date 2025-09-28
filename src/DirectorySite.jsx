@@ -187,16 +187,20 @@ function Modal({ open, onClose, children }) {
         justifyContent: "center",
         padding: 16,
         zIndex: 50,
+        overflow: "auto",
       }}
     >
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          width: "min(960px, 96vw)",
+          width: "min(960px, calc(100vw - 32px))",
+          maxHeight: "calc(100vh - 32px)",
           background: "white",
           borderRadius: 16,
           boxShadow: "0 10px 40px rgba(2,6,23,0.35)",
-          padding: 24,
+          padding: "20px",
+          overflow: "auto",
+          margin: "auto",
         }}
       >
         {children}
@@ -214,15 +218,30 @@ function LeadCard({ lead, onPreview }) {
         background: "#ffffff",
         border: "1px solid #e5e7eb",
         borderRadius: 16,
-        padding: 16,
+        padding: 20,
         display: "flex",
         flexDirection: "column",
-        gap: 12,
-        transition: "box-shadow .2s ease, transform .2s ease",
+        gap: 16,
+        transition: "all 0.2s ease",
+        cursor: "pointer",
+        position: "relative",
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = "translateY(-2px)";
+        e.currentTarget.style.boxShadow = "0 8px 25px rgba(0,0,0,0.1)";
+        e.currentTarget.style.borderColor = "#d1d5db";
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = "translateY(0)";
+        e.currentTarget.style.boxShadow = "0 1px 3px rgba(0,0,0,0.1)";
+        e.currentTarget.style.borderColor = "#e5e7eb";
       }}
     >
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <div style={{ fontWeight: 700, fontSize: 16 }}>{lead.Name} · <span style={{ color: "#6b7280" }}>{lead.Role}</span></div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 8 }}>
+        <div style={{ fontWeight: 700, fontSize: 16, flex: 1, minWidth: 0 }}>
+          <div>{lead.Name}</div>
+          <div style={{ color: "#6b7280", fontSize: 14, fontWeight: 400 }}>{lead.Role}</div>
+        </div>
         <Badge color={scoreColor(Number(lead.Score))}>Score {lead.Score}</Badge>
       </div>
       <a href={lead.Website} target="_blank" rel="noopener noreferrer" style={{ color: "#2563eb", textDecoration: "none"}}>
@@ -234,44 +253,59 @@ function LeadCard({ lead, onPreview }) {
           <Badge key={`${t.trim()}-${idx}`} color="#334155">{t.trim()}</Badge>
         ))}
       </div>
-      <div style={{ display: "flex", gap: 12, alignItems: "center", justifyContent: "space-between" }}>
-        <div style={{ fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace" }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        <div style={{ 
+          fontFamily: "ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace",
+          fontSize: 14,
+          padding: "8px 12px",
+          backgroundColor: "#f9fafb",
+          borderRadius: 8,
+          border: "1px solid #e5e7eb",
+          wordBreak: "break-all"
+        }}>
           {lead["Email (unmasked)"] ? lead["Email (unmasked)"] : maskEmail(lead["Email (masked)"] || lead["Email (unmasked)"])}
         </div>
-        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-          <div style={{ fontWeight: 800, fontSize: 18 }}>${price}</div>
-          <a
-            href={lead.stripeCheckoutUrl || "#"}
-            onClick={(e) => {
-              if (!lead.stripeCheckoutUrl || lead.stripeCheckoutUrl === "#") {
-                e.preventDefault();
-                alert("Connect this card to a Stripe Checkout URL in the data (stripeCheckoutUrl).\nFor now this is a demo.");
-              }
-            }}
-            style={{
-              background: "#111827",
-              color: "white",
-              padding: "10px 14px",
-              borderRadius: 12,
-              textDecoration: "none",
-              fontWeight: 600,
-            }}
-          >
-            Buy
-          </a>
-          <button
-            onClick={() => onPreview(lead)}
-            style={{
-              background: "#f3f4f6",
-              color: "#111827",
-              padding: "10px 14px",
-              borderRadius: 12,
-              fontWeight: 600,
-              border: "1px solid #e5e7eb",
-            }}
-          >
-            Preview
-          </button>
+        <div style={{ display: "flex", gap: 8, alignItems: "center", justifyContent: "space-between", flexWrap: "wrap" }}>
+          <div style={{ fontWeight: 800, fontSize: 18, color: "#059669" }}>${price}</div>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            <a
+              href={lead.stripeCheckoutUrl || "#"}
+              onClick={(e) => {
+                if (!lead.stripeCheckoutUrl || lead.stripeCheckoutUrl === "#") {
+                  e.preventDefault();
+                  alert("Connect this card to a Stripe Checkout URL in the data (stripeCheckoutUrl).\nFor now this is a demo.");
+                }
+              }}
+              style={{
+                background: "#059669",
+                color: "white",
+                padding: "8px 16px",
+                borderRadius: 8,
+                textDecoration: "none",
+                fontWeight: 600,
+                fontSize: 14,
+                whiteSpace: "nowrap",
+              }}
+            >
+              Buy
+            </a>
+            <button
+              onClick={() => onPreview(lead)}
+              style={{
+                background: "#ffffff",
+                color: "#374151",
+                padding: "8px 16px",
+                borderRadius: 8,
+                fontWeight: 600,
+                border: "1px solid #d1d5db",
+                fontSize: 14,
+                cursor: "pointer",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Preview
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -400,7 +434,7 @@ export default function DirectorySite() {
               <div style={{ color: "#cbd5e1", fontSize: 13 }}>{SITE_CONFIG.tagline}</div>
             </div>
           </div>
-          <div style={{ display: "flex", gap: 8 }}>
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
             <button
               onClick={() => fileRef.current?.click()}
               disabled={isLoading}
@@ -463,7 +497,14 @@ export default function DirectorySite() {
       {/* Filters */}
       <section style={{ padding: "12px 16px 0" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", background: "#0f172a", border: "1px solid #1f2937", borderRadius: 16, padding: 16 }}>
-          <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr 1fr 1fr 1fr", gap: 12 }}>
+          <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", 
+            gap: 12,
+            '@media (max-width: 768px)': {
+              gridTemplateColumns: "1fr"
+            }
+          }}>
             <input
               value={q}
               onChange={(e) => setQ(e.target.value)}
@@ -525,14 +566,34 @@ export default function DirectorySite() {
       <Modal open={!!modalLead} onClose={() => setModalLead(null)}>
         {modalLead && (
           <div style={{ display: "grid", gap: 16 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <div>
-                <div id="modal-title" style={{ fontWeight: 800, fontSize: 20 }}>{modalLead.Company}</div>
-                <div style={{ color: "#374151" }}>{modalLead.Name} — {modalLead.Role}</div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div id="modal-title" style={{ fontWeight: 800, fontSize: 20, marginBottom: 4 }}>{modalLead.Company}</div>
+                <div style={{ color: "#6b7280", fontSize: 16 }}>{modalLead.Name} — {modalLead.Role}</div>
               </div>
-              <Badge color={scoreColor(Number(modalLead.Score))}>Score {modalLead.Score}</Badge>
+              <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                <Badge color={scoreColor(Number(modalLead.Score))}>Score {modalLead.Score}</Badge>
+                <button
+                  onClick={() => setModalLead(null)}
+                  style={{
+                    background: "#f3f4f6",
+                    border: "1px solid #d1d5db",
+                    borderRadius: 8,
+                    width: 32,
+                    height: 32,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    fontSize: 18,
+                    color: "#6b7280",
+                  }}
+                >
+                  ×
+                </button>
+              </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(280px, 1fr))", gap: 16 }}>
               <div>
                 <div style={{ fontSize: 14, color: "#111827" }}>{modalLead.Brief || "High‑intent signals detected."}</div>
                 <div style={{ marginTop: 8, display: "flex", gap: 6, flexWrap: "wrap" }}>
